@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ValidationError
 from typing import Optional, List, Dict, Any
-from PydanticModels import Root
+from PydanticModels import Root, TrainingsProvider
 
 
 class Offer(BaseModel):
@@ -92,8 +92,8 @@ class Training(BaseModel):
 class CompanyDetails(BaseModel):
     id: Optional[int]
     name: Optional[str]
-    description: Optional[str]
-    trainings: List[str]  # Training ids
+    # description: Optional[str]
+    trainings: List[int]  # Training ids
     phoneAreaCode: Optional[str]
     phoneExtension: Optional[str]
     mobileAreaCode: Optional[Any] = None
@@ -132,7 +132,7 @@ def to_trainings(root_model: Root) -> List[Training]:
                     school_type=item.angebot.schulart.bezeichnung,
                     disabilities=list(map(lambda dis: dis.bezeichnung, item.angebot.behinderungen)),
                     certifier=item.angebot.zertifizierer,
-                    search_terms=list(map(lambda term_dict: str(term_dict.values()), item.angebot.suchworte)),
+                    search_terms=[value for term_dict in item.angebot.suchworte for value in term_dict.values()],
                     offer_type=item.angebot.angebotstyp.bezeichnung
                 ),
                 address=Address(
@@ -193,5 +193,43 @@ def to_trainings(root_model: Root) -> List[Training]:
 
             )
             , root_model.embedded["termine"]
+        )
+    )
+
+
+def to_training_provider(companies: List[TrainingsProvider], trainings: List[Training]) -> List[CompanyDetails]:
+    return list(
+        map(
+            lambda company:
+            CompanyDetails(
+
+                id=company.id,
+                name=company.name,
+                # description=,
+                trainings=[training.id for training in trainings if training.offer.provider_id == company.id],
+                # Training ids
+                phoneAreaCode=company.telefonVorwahl,
+                phoneExtension=company.telefonDurchwahl,
+                mobileAreaCode=company.mobilVorwahl,
+                mobileExtension=company.mobilDurchwahl,
+                faxPrefix=company.faxVorwahl,
+                faxExtension=company.faxDurchwahl,
+                homepage=company.homepage,
+                email=company.email,
+                address=Address(
+                    label=company.adresse.bezeichnung,
+                    street=company.adresse.strasse,
+                    hints=company.adresse.hinweise,
+                    placeStreet=Street(
+                        zip_code=company.adresse.ortStrasse.plz,
+                        name=company.adresse.ortStrasse.name,
+                        country=company.adresse.ortStrasse.land.name
+                    ),
+                    lat=company.adresse.koordinaten.lat,
+                    lon=company.adresse.koordinaten.lon
+                ),
+                logo_url=company.logo.externalURL,
+            )
+            , companies
         )
     )

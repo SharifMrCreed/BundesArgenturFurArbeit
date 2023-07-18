@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Any
 def run_pydantic(json_data, d_class: BaseModel) -> BaseModel:
     try:
         json_root = d_class.model_validate_json(json_data)
-        print(json_root.model_dump_json(indent=4))
+        # print(json_root.model_dump_json(indent=4))
         return json_root
     except ValidationError as e:
         print(e.errors())
