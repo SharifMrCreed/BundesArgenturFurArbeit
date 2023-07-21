@@ -20,11 +20,11 @@ print(f"trainings: {trainings.__len__()}")
 cred = credentials.Certificate('firebaseKey.json')
 app = firebase_admin.initialize_app(cred)
 db = firestore.client()
-collection_ref = db.collection("Providers")
+collection_ref = db.collection("trainings")
 
-for company in companies_details:
+for company in trainings:
     print(company)
     print()
-    rval = collection_ref.document(str(company.id)).set(company.model_dump())
-    print(rval)
+    # rval = collection_ref.document(str(company.id)).set(company.model_dump())
+    # print(rval)
     print()

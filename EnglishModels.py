@@ -202,7 +202,6 @@ def to_training_provider(companies: List[TrainingsProvider], trainings: List[Tra
         map(
             lambda company:
             CompanyDetails(
-
                 id=company.id,
                 name=company.name,
                 # description=,
